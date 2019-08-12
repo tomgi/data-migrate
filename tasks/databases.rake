@@ -227,7 +227,7 @@ namespace :db do
     desc "Raises an error if there are pending migrations or data migrations"
     task with_data: :environment do
       message = %{Run `rake db:migrate:with_data` to update your database then try again.}
-      abort_if_pending_migrations(pending_migrations, message)
+      DataMigrate::Tasks::DataMigrateTasks.abort_if_pending_migrations(pending_migrations, message)
     end
   end
 
@@ -338,7 +338,7 @@ namespace :data do
   desc "Raises an error if there are pending data migrations"
   task abort_if_pending_migrations: :environment do
     message = %{Run `rake data:migrate` to update your database then try again.}
-    abort_if_pending_migrations(pending_data_migrations, message)
+    DataMigrate::Tasks::DataMigrateTasks.abort_if_pending_migrations(pending_data_migrations, message)
   end
 
   desc "Create a db/data_schema.rb file that stores the current data version"
@@ -379,16 +379,6 @@ end
 
 def sort_string migration
   "#{migration[:version]}_#{migration[:kind] == :data ? 1 : 0}"
-end
-
-def abort_if_pending_migrations(migrations, message)
-  if migrations.any?
-    puts "You have #{migrations.size} pending #{migrations.size > 1 ? 'migrations:' : 'migration:'}"
-    migrations.each do |pending_migration|
-      puts "  %4d %s" % [pending_migration[:version], pending_migration[:name]]
-    end
-    abort message
-  end
 end
 
 def connect_to_database
